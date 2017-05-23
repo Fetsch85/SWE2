@@ -28,6 +28,8 @@ public class BrowserModel {
             headers.append("Content type: " + inConnection.getContentType() + "\n");    
             headers.append("Last modified: " + Instant.ofEpochMilli(inConnection.getLastModified()).toString() + "\n\n");
             
+            
+            
             if (inConnection instanceof HttpURLConnection) {
                 HttpURLConnection in_http = (HttpURLConnection) inConnection;
                 headers.append("HTTP Status-Code: " + in_http.getResponseCode() + "\n\n");
