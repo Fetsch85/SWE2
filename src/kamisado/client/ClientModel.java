@@ -27,7 +27,7 @@ public class ClientModel {
 	private static String ipAdresse;
 	private int port = 444;
 	private int[] ausgewähltesFeldKoordinaten =null;
-	private int[] neueKoordinaten= null;
+	private int[] neueKoordinaten= new int[2];
 	private Feld f= null;
 	private int[] turmKoordinaten;
 
@@ -81,20 +81,28 @@ public class ClientModel {
 	
 	public void KoordinatenEmpfangen(){
 		int[] AktiverTurmFeld = SendenEmpfangen.EmpfangenInt(clientSocket);
+		logger.info("Array erhalten auf Client");
 		if(AktiverTurmFeld[2] != 99){
+			logger.info("Feld Array");
 			neueKoordinaten[0] = AktiverTurmFeld[0];
 			neueKoordinaten[1] = AktiverTurmFeld[1];
+			logger.info("neues Array erstellt");
 		logger.info("Koordinaten empfangen"); 
 		Feld f = getFeld(neueKoordinaten);
 		controller.zugMachen(f);
 		}
 		else{
+			logger.info("Turm Array");
 			neueKoordinaten[0] = AktiverTurmFeld[0];
 			neueKoordinaten[1] = AktiverTurmFeld[1];
+			logger.info("neues Array erstellt");
 			Turm[] türme = Spielbrett.getTürme();
 			for(int i = 0; i < türme.length; i++){
-				if(türme[i].getKoordinaten() == neueKoordinaten){
-					controller.ersterZug(türme[i]);
+				logger.info("Turm wird gesucht");
+				if(türme[i].getKoordinaten()[0] == neueKoordinaten[0] &&
+						türme[i].getKoordinaten()[1] == neueKoordinaten[1]){
+						logger.info("Turm gefunden");
+						controller.ersterZug(türme[i]);
 				}
 			}
 		}
@@ -121,7 +129,7 @@ public class ClientModel {
 		tmpTürme[0] = turmKoordinaten[0];
 		tmpTürme[1] = turmKoordinaten[1];
 		tmpTürme[2] = 99;
-		SendenEmpfangen.Senden(clientSocket, turmKoordinaten);
+		SendenEmpfangen.Senden(clientSocket, tmpTürme);
 		logger.info("Turm vom Client gesendet");
 	}
 	
