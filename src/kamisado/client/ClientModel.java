@@ -89,9 +89,11 @@ public class ClientModel {
 		controller.zugMachen(f);
 		}
 		else{
+			neueKoordinaten[0] = AktiverTurmFeld[0];
+			neueKoordinaten[1] = AktiverTurmFeld[1];
 			Turm[] türme = Spielbrett.getTürme();
 			for(int i = 0; i < türme.length; i++){
-				if(türme[i].getKoordinaten() == AktiverTurmFeld){
+				if(türme[i].getKoordinaten() == neueKoordinaten){
 					controller.ersterZug(türme[i]);
 				}
 			}
