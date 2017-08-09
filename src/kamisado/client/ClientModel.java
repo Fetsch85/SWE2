@@ -26,10 +26,10 @@ public class ClientModel {
 	private static String pw;
 	private static String ipAdresse;
 	private int port = 444;
-	private int[] ausgewähltesFeldKoordinaaten =null;
-	private int[] aktiverTurmKoordinaten= null;
+	private int[] ausgewähltesFeldKoordinaten =null;
+	private int[] neueKoordinaten= null;
 	private Feld f= null;
-	private int[] turmKoordinaten = new int[3];
+	private int[] turmKoordinaten;
 
 	
 	
@@ -82,9 +82,10 @@ public class ClientModel {
 	public void KoordinatenEmpfangen(){
 		int[] AktiverTurmFeld = SendenEmpfangen.EmpfangenInt(clientSocket);
 		if(AktiverTurmFeld[2] != 99){
-		logger.info("Koordinaten empfangen");
-		AktiverTurmFeld = new int[2]; 
-		Feld f = getFeld(AktiverTurmFeld);
+			neueKoordinaten[0] = AktiverTurmFeld[0];
+			neueKoordinaten[1] = AktiverTurmFeld[1];
+		logger.info("Koordinaten empfangen"); 
+		Feld f = getFeld(neueKoordinaten);
 		controller.zugMachen(f);
 		}
 		else{
@@ -105,14 +106,19 @@ public class ClientModel {
 	}
 	
 	public void KoordinatenSenden(){
-		int[] aktiverTurmFeld = new int[3];
-		aktiverTurmFeld[2] = 80;
-		SendenEmpfangen.Senden(clientSocket, aktiverTurmFeld);
+		int[] tmpKoordinaten = new int[3];
+		tmpKoordinaten[0] = ausgewähltesFeldKoordinaten[0];
+		tmpKoordinaten[1] = ausgewähltesFeldKoordinaten[1];
+		tmpKoordinaten[0] = 80;
+		SendenEmpfangen.Senden(clientSocket, tmpKoordinaten);
 		logger.info("Daten gesendet");
 	}
 	
 	public void TurmSenden(){
-		turmKoordinaten[2] = 99;
+		int[] tmpTürme = new int[3];
+		tmpTürme[0] = turmKoordinaten[0];
+		tmpTürme[1] = turmKoordinaten[1];
+		tmpTürme[2] = 99;
 		SendenEmpfangen.Senden(clientSocket, turmKoordinaten);
 		logger.info("Turm vom Client gesendet");
 	}
@@ -620,18 +626,12 @@ public class ClientModel {
 		}
 	}
 	public int[] getAusgewähltesFeldKoordinaaten() {
-		return ausgewähltesFeldKoordinaaten;
+		return ausgewähltesFeldKoordinaten;
 	}
 	public void setAusgewähltesFeldKoordinaaten(int[] ausgewähltesFeldKoordinaaten) {
-		this.ausgewähltesFeldKoordinaaten = ausgewähltesFeldKoordinaaten;
+		this.ausgewähltesFeldKoordinaten = ausgewähltesFeldKoordinaaten;
 	}
-	public int[] getAktiverTurmKoordinaten() {
-		return aktiverTurmKoordinaten;
-	}
-	public void setAktiverTurmKoordinaten(int[] aktiverTurmKoordinaten) {
-		this.aktiverTurmKoordinaten = aktiverTurmKoordinaten;
-	}
-
+	
 	public int[] getTurmKoordinaten() {
 		return turmKoordinaten;
 	}

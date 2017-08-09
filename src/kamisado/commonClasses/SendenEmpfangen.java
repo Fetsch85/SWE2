@@ -110,7 +110,7 @@ public class SendenEmpfangen {
 	
 	public static int[] EmpfangenInt(Socket clientSocket){
 		ObjectInputStream empfangen;
-		int[] aktiverTurmFeld = new int[4];
+		int[] aktiverTurmFeld = new int[3];
 		try{
 			empfangen = new ObjectInputStream(clientSocket.getInputStream());
 			logger.info("IntArray InputStream erstellt");

@@ -37,7 +37,7 @@ public class ClientController {
 			t.setOnMouseClicked(new EventHandler<MouseEvent>(){
 				@Override
 				public void handle(MouseEvent event){
-					if(spielbrett.istTurmBewegt()==false && t.getStroke()==Color.BLACK){	
+					if(Spielbrett.istTurmBewegt()==false && t.getStroke()==Color.BLACK){	
 //						clientModel.turmStrokeWidthZurücksetzen();
 //						t.setStrokeWidth(spielbrett.STROKEWIDTHAUSGEWÄHLTERTURM);
 //						spielbrett.setAktiverTurmKoordinaten(t.getKoordinaten());
