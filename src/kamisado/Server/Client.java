@@ -29,31 +29,32 @@ public class Client {
 		this.clients.add(Client.this);
 		logger.info("Neuer Client zu Liste hinzugefügt " + clientSocket);
 		
-		Runnable a = new Runnable() {
+		Runnable koord = new Runnable() {
 			@Override
 			public void run() {
 				try{
-			
+					
+					
 				while(true) {
-					Turm[] tmpTürme = SendenEmpfangen.Empfangen(clientSocket);
+					
 					int[] tmpKoord = SendenEmpfangen.EmpfangenInt(clientSocket);
-					ArrayList<int[]> tmpMFelder = SendenEmpfangen.EmpfangenMF(clientSocket);
 					logger.info("Daten Empfangen von Client ");
 							
 					for (Client c : clients) {
-						SendenEmpfangen.Senden(c.clientSocket, tmpTürme);
 						SendenEmpfangen.Senden(c.clientSocket, tmpKoord);
-						SendenEmpfangen.Senden(c.clientSocket, tmpMFelder);
 						logger.info("neue Daten gesendet an" + clientSocket.getInetAddress().getHostName());
+					
 					}
 				}
+				
+				
 				} catch (Exception e){
 					e.toString();
 				}
 			}
 		}; 
-		Thread b = new Thread(a);
-		b.start();
+		Thread c = new Thread(koord);
+		c.start();
 		logger.info("Thread gestartet");
 			
 	}

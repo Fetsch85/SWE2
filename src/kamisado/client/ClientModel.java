@@ -18,6 +18,7 @@ import kamisado.commonClasses.Turm;
 public class ClientModel {
 	
 	protected Spielbrett spielbrett;
+	private ClientController controller;
 
 	protected Socket clientSocket;
 	private boolean amLaufen = true;
@@ -25,26 +26,18 @@ public class ClientModel {
 	private static String pw;
 	private static String ipAdresse;
 	private int port = 444;
-	private int[] neueKoordinaten;
-	private Turm t;
-	private Feld f;
-	private int turmInt;
-	private ArrayList<int[]> mFelder;
+	private int[] ausgewähltesFeldKoordinaaten =null;
+	private int[] aktiverTurmKoordinaten= null;
+	private Feld f= null;
+	private int[] turmKoordinaten = new int[3];
+
+	
 	
 	private final Logger logger = Logger.getLogger("");
 	
-//	public ClientModel() { 
-//		try{
-//			InetAddress ich = InetAddress.getLocalHost();
-//			this.name = AnmeldefensterController.getName();
-	//			this.pw = AnmeldefensterController.getPasswort();
-		//	ipAdresse = ich.getHostAddress();
-		//	ipAdresse = AnmeldefensterController.getIP();
-		//	Verbinden(ipAdresse, name, pw);
-	//	} catch (Exception e){
-	//		logger.info(e.toString());
-	//	}
-//	}
+	public ClientModel(ClientController controller) { 
+		this.controller = controller;
+	}
 
 	public void Verbinden(String ipAdresse, String name, String pw) {
 		 String namePW = name + ","+ pw;
@@ -57,82 +50,74 @@ public class ClientModel {
 			
 			SendenEmpfangen.Senden(clientSocket, namePW);
 			
-			//Thread erstellen
-			Runnable a = new Runnable() {
+			//Koordinaten Thread erstellen
+			Runnable koord  = new Runnable() {
 				@Override
 				public void run() {
-					try{
+					
+						
+						
 						while(amLaufen == true){
+							try{
 							
-							TürmeEmpfangen();
-							logger.info("Türme empfangen auf Client");
 							KoordinatenEmpfangen();
 							logger.info("Koordinaten empfangen auf Client");
-							mFelderEmpfangen();
-							logger.info("mFelder empfangen");
-							Spielbrett.setMöglicheFelder(mFelder);
-							Spielbrett.setAktiverTurmKoordinaten(neueKoordinaten);
-							logger.info("Koordinaten ersetzt in Spielfeld");
-							getTurm(neueKoordinaten);
-							logger.info("Turm geholt");
-							getFeld(neueKoordinaten);
-							logger.info("Feld geholt");
-							setNächsterGegnerischerTurm(turmInt, f, neueKoordinaten);
-							logger.info("nächster gegnerischer Turm gesetzt");
-							
-							
-						}
-					}catch (Exception e){
-						logger.info(e.toString());
+														
+						}catch (Exception e){
+							logger.info(e.toString());
+							break;
+					}
 					}
 				}
 			}; 
-			Thread b = new Thread(a);
-			b.start();
-			logger.info("Thread gestartet");
+			Thread c = new Thread(koord);
+			c.start();
+			logger.info("Koordinaten Thread gestartet");
 			
 		} catch (Exception e){
 			logger.info(e.toString());
 		}
 	}	
-	public void TürmeEmpfangen(){
-		Turm[] Türme = Spielbrett.getTürme();
-		Turm[] tmpTürme = SendenEmpfangen.Empfangen(clientSocket);
-		logger.info("Türme empfangen");
-		//Spielbrett.setTürme(tmpTürme);
-		//logger.info("Türme ersetzt auf Client");
-		UpdateSpielfeld(tmpTürme, Türme);
-		logger.info("Spielfeld aktualisiert");
-		
-	}
-	
-	public void mFelderEmpfangen(){
-		ArrayList<int[]>  tmpMFelder = SendenEmpfangen.EmpfangenMF(clientSocket);
-		logger.info("mFelder empfangen");
-		mFelder = tmpMFelder;
-	}
 	
 	public void KoordinatenEmpfangen(){
-		int[] tmpKoord = SendenEmpfangen.EmpfangenInt(clientSocket);
+		int[] AktiverTurmFeld = SendenEmpfangen.EmpfangenInt(clientSocket);
+		if(AktiverTurmFeld[2] != 99){
 		logger.info("Koordinaten empfangen");
-		neueKoordinaten = tmpKoord;
-		
+		AktiverTurmFeld = new int[2]; 
+		Feld f = getFeld(AktiverTurmFeld);
+		controller.zugMachen(f);
+		}
+		else{
+			Turm[] türme = Spielbrett.getTürme();
+			for(int i = 0; i < türme.length; i++){
+				if(türme[i].getKoordinaten() == AktiverTurmFeld){
+					controller.ersterZug(türme[i]);
+				}
+			}
+		}
 	}
 	
-	public void TürmeSenden(){
-		SendenEmpfangen.Senden(clientSocket, Spielbrett.getTürme());
-		SendenEmpfangen.Senden(clientSocket, neueKoordinaten);
-		logger.info("Daten gesendet");
+	public void TurmEmpfangen(){
+		Turm t = SendenEmpfangen.EmpfangenTurm(clientSocket);
+		Spielbrett.setAktiverTurmKoordinaten(t.getKoordinaten());
+		logger.info("Koordinaten empfangen");
+		controller.ersterZug(t);
 	}
+	
 	public void KoordinatenSenden(){
-		SendenEmpfangen.Senden(clientSocket, Spielbrett.getAktiverTurmKoordinaten());
+		int[] aktiverTurmFeld = new int[3];
+		aktiverTurmFeld[2] = 80;
+		SendenEmpfangen.Senden(clientSocket, aktiverTurmFeld);
 		logger.info("Daten gesendet");
 	}
 	
-	public void MFelderSenden(){
-		SendenEmpfangen.Senden(clientSocket, mFelder);
-		logger.info("Felder gesendet");
+	public void TurmSenden(){
+		turmKoordinaten[2] = 99;
+		SendenEmpfangen.Senden(clientSocket, turmKoordinaten);
+		logger.info("Turm vom Client gesendet");
 	}
+	
+	
 	
 	public void UpdateSpielfeld(Turm[] türme, Turm[]alteTürme){
 	
@@ -192,18 +177,6 @@ public class ClientModel {
 	}
 	public void setIP(String ipAdresse){
 		this.ipAdresse = ipAdresse;
-	}
-	
-	public Turm getTurm(int[] turmKoordinaten){
-		Turm[] türme = Spielbrett.getTürme();
-		for(int i = 0; i < türme.length; i++){
-				if(türme[i].getKoordinaten() == turmKoordinaten){
-					this.t = türme[i];
-					this.turmInt = i;
-				}
-		}
-		
-		return t;
 	}
 	
 	public Feld getFeld(int[] feldKoordinaten){
@@ -645,6 +618,26 @@ public class ClientModel {
 				}
 			}				
 		}
+	}
+	public int[] getAusgewähltesFeldKoordinaaten() {
+		return ausgewähltesFeldKoordinaaten;
+	}
+	public void setAusgewähltesFeldKoordinaaten(int[] ausgewähltesFeldKoordinaaten) {
+		this.ausgewähltesFeldKoordinaaten = ausgewähltesFeldKoordinaaten;
+	}
+	public int[] getAktiverTurmKoordinaten() {
+		return aktiverTurmKoordinaten;
+	}
+	public void setAktiverTurmKoordinaten(int[] aktiverTurmKoordinaten) {
+		this.aktiverTurmKoordinaten = aktiverTurmKoordinaten;
+	}
+
+	public int[] getTurmKoordinaten() {
+		return turmKoordinaten;
+	}
+
+	public void setTurmKoordinaten(int[] turmKoordinaten) {
+		this.turmKoordinaten = turmKoordinaten;
 	}
 
 }

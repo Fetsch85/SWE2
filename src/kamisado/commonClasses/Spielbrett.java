@@ -145,7 +145,7 @@ public class Spielbrett{
  	// Getter und setter
  	
  	
-	public boolean istTurmBewegt() {
+	public static boolean istTurmBewegt() {
 		return turmBewegt;
 	}
 	public void setTurmBewegt(boolean turmBewegt) {

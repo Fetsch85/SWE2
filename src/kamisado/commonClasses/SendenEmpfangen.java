@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import javafx.scene.input.MouseEvent;
+import kamisado.client.ClientModel;
 
 /**
  * @author Tobias Deprato
@@ -14,34 +15,18 @@ import javafx.scene.input.MouseEvent;
 
 public class SendenEmpfangen {
 	
-	private static final Logger logger = Logger.getLogger("");
-	private static Turm[] neueTürme;
-	private static String namePW;
-	private static int[] koordinaten;
-	private static ArrayList<int[]> möglicheFelder;
+
 	
-	public static void Senden(Socket clientSocket, Turm[] Türme){
-		ObjectOutputStream senden;
-		try{
-			//Stream erstellen
-			senden = new ObjectOutputStream(clientSocket.getOutputStream());
-			logger.info("OutputStream erstellt");
-			
-			//neueKoordinaten an Client senden
-			senden.writeObject(Türme);
-			senden.flush();
-			logger.info("Neue Türme gesendet");
-		} catch (Exception e){
-			logger.info(e.toString());
-		}
-	}
+	private static final Logger logger = Logger.getLogger("");
+	private static String namePW;
+	private int[] ausgewähltesFeldKoordinaaten;
 	
 	public static void Senden(Socket clientSocket, String namePW){
 		ObjectOutputStream senden;
 		try{
 			//Stream erstellen
 			senden = new ObjectOutputStream(clientSocket.getOutputStream());
-			logger.info("OutputStream erstellt");
+			logger.info("String OutputStream erstellt");
 			
 			//neueKoordinaten an Client senden
 			senden.writeObject(namePW);
@@ -52,30 +37,53 @@ public class SendenEmpfangen {
 		}
 	}
 	
-	public static void Senden(Socket clientSocket, int[] Koord){
+	public static void Senden(Socket clientSocket, Turm t){
 		ObjectOutputStream senden;
 		try{
 			//Stream erstellen
 			senden = new ObjectOutputStream(clientSocket.getOutputStream());
-			logger.info("OutputStream erstellt");
+			logger.info("Turm OutputStream erstellt");
 			
 			//neueKoordinaten an Client senden
-			senden.writeObject(Koord);
+			senden.writeObject(t);
+			senden.flush();
+			logger.info("Turm gesendet");
+		} catch (Exception e){
+			logger.info(e.toString());
+		}
+	}
+	
+	public static void Senden(Socket clientSocket, int[] KoordTurmFeld){
+		ObjectOutputStream senden;
+		try{
+			//Stream erstellen
+			senden = new ObjectOutputStream(clientSocket.getOutputStream());
+			logger.info("IntArray OutputStream erstellt");
+			
+			//neueKoordinaten an Client senden
+			senden.writeObject(KoordTurmFeld);
 			senden.flush();
 			logger.info("Neue Koordinaten gesendet");
 		} catch (Exception e){
 			logger.info(e.toString());
 		}
 	}
-	public static void Senden(Socket clientSocket, ArrayList<int[]> mFelder){
+	
+	public static void Senden(Socket clientSocket, int[] KoordFeld, int[] KoordTurm){
 		ObjectOutputStream senden;
+		int[] aktiverTurmFeld = new int[4];
+		aktiverTurmFeld[0]=KoordTurm[0];
+		aktiverTurmFeld[1]=KoordTurm[1];
+		aktiverTurmFeld[2]=KoordFeld[0];
+		aktiverTurmFeld[3]=KoordFeld[1];
+		
 		try{
 			//Stream erstellen
 			senden = new ObjectOutputStream(clientSocket.getOutputStream());
-			logger.info("OutputStream erstellt");
+			logger.info("IntArray OutputStream erstellt");
 			
 			//neueKoordinaten an Client senden
-			senden.writeObject(mFelder);
+			senden.writeObject(aktiverTurmFeld);
 			senden.flush();
 			logger.info("Neue Koordinaten gesendet");
 		} catch (Exception e){
@@ -83,71 +91,38 @@ public class SendenEmpfangen {
 		}
 	}
 	
-	public static void Senden(Socket clientSocket, boolean schwarz){
-		ObjectOutputStream senden;
+	public static Turm EmpfangenTurm(Socket clientSocket){
+		ObjectInputStream empfangen;
+		Turm turm = null;
 		try{
-			//Stream erstellen
-			senden = new ObjectOutputStream(clientSocket.getOutputStream());
-			logger.info("OutputStream erstellt");
-			
-			//neueKoordinaten an Client senden
-			senden.writeObject(schwarz);
-			senden.flush();
-			logger.info("Schwarz ist " + schwarz + " gesendet");
+			empfangen = new ObjectInputStream(clientSocket.getInputStream());
+			logger.info("IntArray InputStream erstellt");
+		
+			//neueKoordinaten von Client empfangen
+			Turm tmpTurm = (Turm) empfangen.readObject();
+			logger.info("Neue Koordinaten erhalten");
+			turm = tmpTurm;
 		} catch (Exception e){
 			logger.info(e.toString());
 		}
+		return turm;
 	}
-	
-	public static Turm[] Empfangen(Socket clientSocket){
-		ObjectInputStream empfangen;
-		Turm[] in;
-		try{
-			empfangen = new ObjectInputStream(clientSocket.getInputStream());
-			logger.info("InputStream erstellt");
-		
-			//neueKoordinaten von Client empfangen
-			 in = (Turm[]) empfangen.readObject();
-			logger.info("Neue Türme erhalten");
-			setTürme(in);			
-		} catch (Exception e){
-			logger.info(e.toString());
-		}
-		return neueTürme;
-	}	
-	
-	public static ArrayList<int[]> EmpfangenMF(Socket clientSocket){
-		ObjectInputStream empfangen;
-		ArrayList<int[]> mFelder;
-		try{
-			empfangen = new ObjectInputStream(clientSocket.getInputStream());
-			logger.info("InputStream erstellt");
-		
-			//neueKoordinaten von Client empfangen
-			 mFelder = (ArrayList<int[]>) empfangen.readObject();
-			logger.info("Neue Türme erhalten");
-			setMöglicheFelder(möglicheFelder);			
-		} catch (Exception e){
-			logger.info(e.toString());
-		}
-		return möglicheFelder;
-	}	
 	
 	public static int[] EmpfangenInt(Socket clientSocket){
 		ObjectInputStream empfangen;
-		int[] in;
+		int[] aktiverTurmFeld = new int[4];
 		try{
 			empfangen = new ObjectInputStream(clientSocket.getInputStream());
-			logger.info("InputStream erstellt");
+			logger.info("IntArray InputStream erstellt");
 		
 			//neueKoordinaten von Client empfangen
-			 in = (int[]) empfangen.readObject();
-			logger.info("Neue Türme erhalten");
-			setKoordinaten(in);			
+			int[] inAktiverTurmFeld = (int[]) empfangen.readObject();
+			logger.info("Neue Koordinaten erhalten");
+			aktiverTurmFeld = inAktiverTurmFeld;
 		} catch (Exception e){
 			logger.info(e.toString());
 		}
-		return koordinaten;
+		return aktiverTurmFeld;
 	}	
 	
 	public static String EmpfangenString(Socket clientSocket){
@@ -155,7 +130,7 @@ public class SendenEmpfangen {
 		String in; 
 		try{
 			empfangen = new ObjectInputStream(clientSocket.getInputStream());
-			logger.info("InputStream erstellt");
+			logger.info("String InputStream erstellt");
 		
 			//neueKoordinaten von Client empfangen
 			 in = (String) empfangen.readObject();
@@ -166,29 +141,9 @@ public class SendenEmpfangen {
 		}
 		return namePW;
 	}	
-	public static void setTürme(Turm[] Türme){
-		neueTürme = Türme;
-	}
-	
 	public static void setString(String s){
 		namePW = s;
 	}
 
-	public static int[] getKoordinaten() {
-		return koordinaten;
-	}
-
-	public static void setKoordinaten(int[] koordinaten) {
-		SendenEmpfangen.koordinaten = koordinaten;
-	}
-
-	public static ArrayList getMöglicheFelder() {
-		return möglicheFelder;
-	}
-
-	public static void setMöglicheFelder(ArrayList möglicheFelder) {
-		SendenEmpfangen.möglicheFelder = möglicheFelder;
-	}
 	
-
 }

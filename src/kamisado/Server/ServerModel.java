@@ -40,6 +40,7 @@ public class ServerModel extends Thread{
 			
 		} catch(Exception e){
 			logger.info(e.toString());
+			
 		}
 	}
 	
@@ -56,6 +57,7 @@ public class ServerModel extends Thread{
 				
 			} catch (Exception e){
 				logger.info(e.toString());
+				break;
 			}
 		}
 	}
