@@ -34,7 +34,7 @@ public class SendenEmpfangen {
 		}
 	}
 	
-	public static void Senden(Socket clientSocket, String string){
+	public static void Senden(Socket clientSocket, String namePW){
 		ObjectOutputStream senden;
 		try{
 			//Stream erstellen
@@ -42,7 +42,7 @@ public class SendenEmpfangen {
 			logger.info("OutputStream erstellt");
 			
 			//neueKoordinaten an Client senden
-			senden.writeObject(string);
+			senden.writeObject(namePW);
 			senden.flush();
 			logger.info("Anmeldedaten gesendet");
 		} catch (Exception e){
@@ -81,7 +81,6 @@ public class SendenEmpfangen {
 		}
 		return in;
 	}	
-	
 	
 	
 	public static String EmpfangenString(Socket clientSocket){

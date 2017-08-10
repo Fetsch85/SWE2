@@ -31,15 +31,11 @@ public class ServerModel extends Thread{
 	private String namePW;
 	private boolean amLaufen = true;
 	private static final Logger logger = Logger.getLogger("");
-	protected final static ObservableList<Client> clients = FXCollections.observableArrayList();
-	public static ObservableList<Client> getClients() {
-		return clients;
-	}
 
 	private String meldung;
 	
 	
-	public ServerModel (int port)  {
+	public ServerModel (int port) {
 		
 		try{
 			//Server starten
@@ -51,23 +47,35 @@ public class ServerModel extends Thread{
 		} catch(Exception e){
 			logger.info(e.toString());
 		}
-	}
+		
 	
+	
+	Runnable a = new Runnable() {
 	public void run() {
 		while(amLaufen == true){
 			try{
 				//Verbindung mit Client herstellen
 				Socket clientSocket = server.accept();
 				logger.info(clientSocket.getInetAddress().getHostName() + " verbunden");
+				String eingang = SendenEmpfangen.EmpfangenString(clientSocket);
+				logger.info("Anmeldedaten erhalten: " + namePW);
+				String[] teile = eingang.split(",");
+				namePW = teile[1] +"," + teile[2];
 				
 				
+				if(teile[0].equals("anmelden") ){
+					meldung = AnmeldungPrüfen(namePW);
+				} else if (teile[0].equals("registrieren")) {
+					meldung = RegistrierungPrüfen(namePW);
+				} else if (teile[0].equals("löschen")){
+					meldung = LöschenPrüfen(namePW);
+				} else {
+					meldung = "Fehler";
+				}
 				
-				client = new Client(ServerModel.this, clientSocket, this.name);
-//				this.clients.add(client);
-//				logger.info("Neuer Client zu Liste hinzugefügt " + clientSocket);
+				SendenEmpfangen.Senden(clientSocket, meldung);
 				
-				
-				
+				client = new Client(ServerModel.this, clientSocket);
 				
 				
 			} catch (Exception e){
@@ -75,46 +83,14 @@ public class ServerModel extends Thread{
 			}
 		}
 	}
-	
-public void EmpfangenServer (Socket clientSocket){
+	}; 
+	Thread b = new Thread(a);
+	b.start();
+	logger.info("Thread gestartet");
 		
-		
-		try{
-			ObjectInputStream empfangen = new ObjectInputStream(clientSocket.getInputStream());
-		
-		logger.info("available is: " + empfangen.available());;
-		Object neuEmpfangen = empfangen.readObject();
-		if( neuEmpfangen instanceof Turm[]){
-			Turm[] tmpTürme = (Turm[]) empfangen.readObject();
-			
-			for (Client c : clients) {
-				SendenEmpfangen.Senden(client.getSocket(c), tmpTürme);
-				logger.info("neue Türme gesendet an" + client.getSocket(c).getInetAddress().getHostName());
-			}
-		} else if (neuEmpfangen instanceof String){
-			String tmpMeldung = (String) empfangen.readObject();
-			
-			for (Client c : clients) {
-				SendenEmpfangen.Senden(client.getSocket(c), tmpMeldung);
-				logger.info("neuer String " + tmpMeldung + " gesendet an " + client.getSocket(c).getInetAddress().getHostName());
-			}
-		} else if (neuEmpfangen instanceof Boolean){
-			boolean tmpBol = (boolean) empfangen.readObject();
-			
-			for (Client c : clients) {
-				SendenEmpfangen.Senden(client.getSocket(c), tmpBol);
-				logger.info("neue boolean gesendet an" + client.getSocket(c).getInetAddress().getHostName());						}
-		} else{
-			logger.info("hat nicht funktioniert so");
-		}
-		
-		logger.info("Daten Empfangen von Client ");
-		} catch (Exception e) {
-			logger.info(e.toString());
-		}
-		
-	
 	}
+	
+
 	
 		
 	//TODO Carmen clientController hierhin auslagern

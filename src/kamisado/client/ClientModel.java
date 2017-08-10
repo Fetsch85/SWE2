@@ -1,6 +1,5 @@
 package kamisado.client;
 
-import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -49,18 +48,8 @@ public class ClientModel {
 				public void run() {
 					try{
 						while(amLaufen == true){
-							ObjectInputStream empfangen = new ObjectInputStream(clientSocket.getInputStream());
-							empfangen.readObject();
-							if(clientSocket.getInputStream().equals(true) && empfangen.readObject() instanceof Turm[]){
-								Turm[] tmpTürme = (Turm[]) empfangen.readObject();
-								TürmeEmpfangen(tmpTürme);
-								
-							} else if (empfangen.readObject() instanceof String){
-								String tmpString = (String) empfangen.readObject();
-								
-							} else if (empfangen.readObject() instanceof Boolean){
-								boolean tmpBol = (boolean) empfangen.readObject();
-							}								
+							TürmeEmpfangen();
+							logger.info("Türme empfangen auf Client");							
 						}
 					}catch (Exception e){
 						logger.info(e.toString());
@@ -75,10 +64,9 @@ public class ClientModel {
 			logger.info(e.toString());
 		}
 	}	
-	
-	public void TürmeEmpfangen(Turm[] tmpTürme){
+	public void TürmeEmpfangen(){
 		Turm[] Türme = Spielbrett.getTürme();
-//		Turm[] tmpTürme = SendenEmpfangen.Empfangen(clientSocket);
+		Turm[] tmpTürme = SendenEmpfangen.Empfangen(clientSocket);
 		if(tmpTürme != null && tmpTürme[0] != null) {
 			logger.info("Türme empfangen");
 			UpdateSpielfeld(Türme, tmpTürme);

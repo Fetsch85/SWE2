@@ -135,7 +135,7 @@ public class ClientController {
 								clientModel.getTurm(nächsterAktiverTurm).setAktiverTurm(true); 
 								clientModel.TürmeSenden();
 							}
-//							clientModel.TürmeSenden();
+							clientModel.TürmeSenden();
 							
 
 						}
