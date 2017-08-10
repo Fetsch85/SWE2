@@ -4,6 +4,7 @@ package kamisado.Server;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,6 +13,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Logger;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import kamisado.Server.Client;
 import kamisado.commonClasses.SendenEmpfangen;
 import kamisado.commonClasses.Turm;
 
@@ -22,11 +26,17 @@ import kamisado.commonClasses.Turm;
 public class ServerModel extends Thread{
 	
 	private ServerSocket server;
-	private Client client;
+	private static Client client;
 	private String name;
 	private String namePW;
 	private boolean amLaufen = true;
-	private final Logger logger = Logger.getLogger("");
+	private static final Logger logger = Logger.getLogger("");
+	protected final static ObservableList<Client> clients = FXCollections.observableArrayList();
+	public static ObservableList<Client> getClients() {
+		return clients;
+	}
+
+	private String meldung;
 	
 	
 	public ServerModel (int port)  {
@@ -40,7 +50,6 @@ public class ServerModel extends Thread{
 			
 		} catch(Exception e){
 			logger.info(e.toString());
-			
 		}
 	}
 	
@@ -50,22 +59,69 @@ public class ServerModel extends Thread{
 				//Verbindung mit Client herstellen
 				Socket clientSocket = server.accept();
 				logger.info(clientSocket.getInetAddress().getHostName() + " verbunden");
-				namePW = SendenEmpfangen.EmpfangenString(clientSocket);
-				logger.info("Anmeldedaten erhalten: " + namePW);
+				
+				
+				
 				client = new Client(ServerModel.this, clientSocket, this.name);
+//				this.clients.add(client);
+//				logger.info("Neuer Client zu Liste hinzugefügt " + clientSocket);
+				
+				
+				
 				
 				
 			} catch (Exception e){
 				logger.info(e.toString());
-				break;
 			}
 		}
 	}
 	
+public void EmpfangenServer (Socket clientSocket){
+		
+		
+		try{
+			ObjectInputStream empfangen = new ObjectInputStream(clientSocket.getInputStream());
+		
+		logger.info("available is: " + empfangen.available());;
+		Object neuEmpfangen = empfangen.readObject();
+		if( neuEmpfangen instanceof Turm[]){
+			Turm[] tmpTürme = (Turm[]) empfangen.readObject();
+			
+			for (Client c : clients) {
+				SendenEmpfangen.Senden(client.getSocket(c), tmpTürme);
+				logger.info("neue Türme gesendet an" + client.getSocket(c).getInetAddress().getHostName());
+			}
+		} else if (neuEmpfangen instanceof String){
+			String tmpMeldung = (String) empfangen.readObject();
+			
+			for (Client c : clients) {
+				SendenEmpfangen.Senden(client.getSocket(c), tmpMeldung);
+				logger.info("neuer String " + tmpMeldung + " gesendet an " + client.getSocket(c).getInetAddress().getHostName());
+			}
+		} else if (neuEmpfangen instanceof Boolean){
+			boolean tmpBol = (boolean) empfangen.readObject();
+			
+			for (Client c : clients) {
+				SendenEmpfangen.Senden(client.getSocket(c), tmpBol);
+				logger.info("neue boolean gesendet an" + client.getSocket(c).getInetAddress().getHostName());						}
+		} else{
+			logger.info("hat nicht funktioniert so");
+		}
+		
+		logger.info("Daten Empfangen von Client ");
+		} catch (Exception e) {
+			logger.info(e.toString());
+		}
+		
+	
+	}
+	
+		
 	//TODO Carmen clientController hierhin auslagern
 	public String AnmeldungPrüfen(String AnmeldeInfos){
 		String meldung = "";
 		String[] prüfen = AnmeldeInfos.split(",");
+		logger.info("Name: " + prüfen[0] + " PW: " + prüfen[1]);
 		try {
 			FileReader fr = new FileReader("src/kamisado/registrierungen.txt");
 			BufferedReader reader = new BufferedReader(fr);
@@ -78,14 +134,16 @@ public class ServerModel extends Thread{
 					benutzerExistiert = true;
 					meldung = "startMeldung";
 				//Überprüfen, ob Name stimmt und Passwort falsch ist
-				}else if(parts[0].equals(prüfen[0])&&!parts[1].equals(prüfen[1]))
+				}else if(parts[0].equals(prüfen[0])&&!parts[1].equals(prüfen[1])){
 					benutzerExistiert=true;
-				meldung = "PasswortFalsch";
+					meldung = "PasswortFalsch";
+				}
+				
 			}
 			//Der Benutzer ist nicht gespeichert
 			if(benutzerExistiert==false){
 				meldung = "BenutzerExistiertNicht";
-			}reader.close();
+			}
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -107,7 +165,7 @@ public class ServerModel extends Thread{
 					benutzerVergeben = true;
 					meldung = "BenutzernameVergeben";
 				}
-			}reader.close();
+			}
 			
 			if(benutzerVergeben==false){
 				if(prüfen[1].length()>=5){
@@ -126,6 +184,7 @@ public class ServerModel extends Thread{
 		}
 		return meldung;
 	}
+	
 	
 	public String LöschenPrüfen(String LöschInfos){
 		String meldung = "";
@@ -189,6 +248,14 @@ public class ServerModel extends Thread{
 			e.printStackTrace();
 		}
 		return meldung;
+	}
+
+	public String getMeldung() {
+		return meldung;
+	}
+
+	public void setMeldung(String meldung) {
+		this.meldung = meldung;
 	}
 	
 	

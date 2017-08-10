@@ -7,8 +7,8 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import kamisado.client.ClientController;
 import kamisado.client.ClientView;
+import kamisado.client.anmeldefenster.AnmeldefensterController;
 import kamisado.client.anmeldefenster.AnmeldefensterView;
-import kamisado.commonClasses.SendenEmpfangen;
 import kamisado.client.ClientModel;
 
 public class Kamisado extends Application {
@@ -17,6 +17,7 @@ public class Kamisado extends Application {
 	private ClientController controller;
 	private ClientModel clientModel;
 	private AnmeldefensterView anmeldeView;
+	private AnmeldefensterController anmeldeController;
 		
 	public static void main(String[] args) {
 		launch(args);	
@@ -24,9 +25,9 @@ public class Kamisado extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws IOException{
-		clientModel = new ClientModel(controller);
+		clientModel = new ClientModel();
 		view = new ClientView(primaryStage, clientModel, anmeldeView);
-		controller = new ClientController(clientModel, view);
+		controller = new ClientController(clientModel, view, anmeldeController);	
 		view.start();
 	}
 	

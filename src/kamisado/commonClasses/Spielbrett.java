@@ -18,19 +18,14 @@ public class Spielbrett{
 	private ClientModel clientModel;
 		
 	private static boolean turmBewegt = false; // wenn diese Variable true ist, wurde bereits ein Turm bewegt -> nicht mehr der erste Spielzug
-	private static boolean blockade = false;
-	private static int blockadenCounter = 0;
-	private static Color blockadenVerursacher = null;
 	private static int [] aktiverTurmKoordinaten = new int [2];
-	private static Color gewinner;
 	
-	private static String [] benutzerFarben = {"Color.BLACK", "Color.WHITE"};
-
 	// Infos des Spielbretts, der Türme und Felder als Konstanten definieren
 	public final int SPIELBRETTHÖHE = 886;
 	public final int SPIELBRETTBREITE = 826;
 	public final int STROKEWIDTHTÜRMESTANDARD = 3;
 	public final int STROKEWIDTHAUSGEWÄHLTERTURM = 8;
+	public final int STROKEWIDTHFELDERSTANDARD = 1;
 	public final int STROKEWIDTHMÖGLICHEFELDER = 5;
 	public final int FELDGRÖSSE = 100;
 	public final int TURMDURCHMESSER = 40;
@@ -145,11 +140,14 @@ public class Spielbrett{
  	// Getter und setter
  	
  	
+	
+
 	public static boolean istTurmBewegt() {
 		return turmBewegt;
 	}
-	public void setTurmBewegt(boolean turmBewegt) {
-		this.turmBewegt = turmBewegt;
+
+	public static void setTurmBewegt(boolean turmBewegt) {
+		Spielbrett.turmBewegt = turmBewegt;
 	}
 
 	public static Turm [] getTürme() {
@@ -192,41 +190,6 @@ public class Spielbrett{
 	}
 	public static void setMöglicheFelder(ArrayList<int[]> möglicheFelder) {
 		Spielbrett.möglicheFelder = möglicheFelder;
-	}
-
-	public Color getGewinner() {
-		return gewinner;
-	}
-	public void setGewinner(Color gewinner) {
-		Spielbrett.gewinner = gewinner;
-	}
-
-	public static boolean isBlockiert() {
-		return blockade;
-	}
-	public static void setBlockiert(boolean blockiert) {
-		Spielbrett.blockade = blockiert;
-	}
-
-	public static int getBlockadenCounter() {
-		return blockadenCounter;
-	}
-	public static void setBlockadenCounter(int blockadenCounter) {
-		Spielbrett.blockadenCounter = blockadenCounter;
-	}
-
-	public static Color getBlockadenVerursacher() {
-		return blockadenVerursacher;
-	}
-	public static void setBlockadenVerursacher(Color blockadenVerursacher) {
-		Spielbrett.blockadenVerursacher = blockadenVerursacher;
-	}
-
-	public static String[] getBenutzerFarben() {
-		return benutzerFarben;
-	}
-	public static void setBenutzerFarben(String[] benutzerFarben) {
-		Spielbrett.benutzerFarben = benutzerFarben;
 	}
 
 	public static int [] getAktiverTurmKoordinaten() {
