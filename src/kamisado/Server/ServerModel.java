@@ -4,20 +4,12 @@ package kamisado.Server;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Logger;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import kamisado.Server.Client;
-import kamisado.commonClasses.SendenEmpfangen;
-import kamisado.commonClasses.Turm;
 
 /**
  * @author Tobias Deprato
@@ -26,16 +18,13 @@ import kamisado.commonClasses.Turm;
 public class ServerModel extends Thread{
 	
 	private ServerSocket server;
-	private static Client client;
-	private String name;
-	private String namePW;
 	private boolean amLaufen = true;
 	private static final Logger logger = Logger.getLogger("");
-
-	private String meldung;
-	
-	
-	public ServerModel (int port) {
+	/** startet den Server und wartet bis sich ein Client verbinden möchte,
+	 * bei einer Verbindung erstellt er ein Clientobjekt
+	 * @author Tobias Deprato 
+	 */	
+	public ServerModel (int port)  {
 		
 		try{
 			//Server starten
@@ -47,53 +36,34 @@ public class ServerModel extends Thread{
 		} catch(Exception e){
 			logger.info(e.toString());
 		}
-		
 	
 	
 	Runnable a = new Runnable() {
-	public void run() {
-		while(amLaufen == true){
-			try{
-				//Verbindung mit Client herstellen
-				Socket clientSocket = server.accept();
-				logger.info(clientSocket.getInetAddress().getHostName() + " verbunden");
-				String eingang = SendenEmpfangen.EmpfangenString(clientSocket);
-				logger.info("Anmeldedaten erhalten: " + namePW);
-				String[] teile = eingang.split(",");
-				namePW = teile[1] +"," + teile[2];
-				
-				
-				if(teile[0].equals("anmelden") ){
-					meldung = AnmeldungPrüfen(namePW);
-				} else if (teile[0].equals("registrieren")) {
-					meldung = RegistrierungPrüfen(namePW);
-				} else if (teile[0].equals("löschen")){
-					meldung = LöschenPrüfen(namePW);
-				} else {
-					meldung = "Fehler";
+		public void run() {
+			while(amLaufen == true){
+				try{
+					//Verbindung mit Client herstellen
+					Socket clientSocket = server.accept();
+					logger.info(clientSocket.getInetAddress().getHostName() + " verbunden");
+					
+					new Client(ServerModel.this, clientSocket);
+					
+					
+				} catch (Exception e){
+					logger.info(e.toString());
 				}
-				
-				SendenEmpfangen.Senden(clientSocket, meldung);
-				
-				client = new Client(ServerModel.this, clientSocket);
-				
-				
-			} catch (Exception e){
-				logger.info(e.toString());
 			}
 		}
-	}
 	}; 
 	Thread b = new Thread(a);
 	b.start();
-	logger.info("Thread gestartet");
-		
-	}
+}
 	
-
-	
-		
-	//TODO Carmen clientController hierhin auslagern
+	/**
+	 * @param AnmeldeInfos
+	 * @return String mit der Meldung, welche auf dem Client angezeigt wird
+	 * @author carmen walser
+	 */
 	public String AnmeldungPrüfen(String AnmeldeInfos){
 		String meldung = "";
 		String[] prüfen = AnmeldeInfos.split(",");
@@ -108,17 +78,17 @@ public class ServerModel extends Thread{
 				//Überprüfung, ob Name und Passwort übereinstimmen
 				if(parts[0].equals(prüfen[0])&&parts[1].equals(prüfen[1])){
 					benutzerExistiert = true;
-					meldung = "startMeldung";
+					meldung = "anmelden,startMeldung";
 				//Überprüfen, ob Name stimmt und Passwort falsch ist
 				}else if(parts[0].equals(prüfen[0])&&!parts[1].equals(prüfen[1])){
 					benutzerExistiert=true;
-					meldung = "PasswortFalsch";
+					meldung = "anmelden,PasswortFalsch";
 				}
 				
 			}
 			//Der Benutzer ist nicht gespeichert
 			if(benutzerExistiert==false){
-				meldung = "BenutzerExistiertNicht";
+				meldung = "anmelden,BenutzerExistiertNicht";
 			}
 			
 		} catch (IOException e) {
@@ -127,6 +97,11 @@ public class ServerModel extends Thread{
 		return meldung;
 	}
 	
+	/**
+	 * @param RegistrierInfos
+	 * @return String mit der Meldung, welche auf dem Client angezeigt wird
+	 * @author carmen walser
+	 */
 	public String RegistrierungPrüfen(String RegistrierInfos){
 		String meldung = "";
 		String[] prüfen = RegistrierInfos.split(",");
@@ -139,7 +114,7 @@ public class ServerModel extends Thread{
 				String[] parts = zeile.split(",");
 				if(parts[0].equals(prüfen[0])){
 					benutzerVergeben = true;
-					meldung = "BenutzernameVergeben";
+					meldung = "registrieren,BenutzernameVergeben";
 				}
 			}
 			
@@ -150,9 +125,9 @@ public class ServerModel extends Thread{
 					fw.write(prüfen[1]);
 					fw.write("\n");
 					fw.close();
-					meldung="RegistrierMeldung";
+					meldung="registrieren,RegistrierMeldung";
 				}else{
-					meldung ="PasswortZuKurz";
+					meldung ="registrieren,PasswortZuKurz";
 				}
 			}
 		} catch (IOException e) {
@@ -162,6 +137,11 @@ public class ServerModel extends Thread{
 	}
 	
 	
+	/**
+	 * @param LöschInfos
+	 * @return String mit der Meldung, welche auf dem Client angezeigt wird
+	 * @author carmen walser
+	 */
 	public String LöschenPrüfen(String LöschInfos){
 		String meldung = "";
 		String[] prüfen = LöschInfos.split(",");
@@ -209,15 +189,15 @@ public class ServerModel extends Thread{
 						schreiben.write(s);
 						schreiben.write("\n");
 						schreiben.close();
-					}meldung="ErfolgreichMeldung";
+					}meldung="löschen,ErfolgreichMeldung";
 					break;
 				}else if(parts[0].equals(prüfen[0])&&!parts[1].equals(prüfen[1])){
 					benutzerExistiert=true;
-					meldung = "PasswortFalschMeldung";
+					meldung = "löschen,PasswortFalschMeldung";
 				}
 			}
 			if(benutzerExistiert==false){
-				meldung="BenutzerExistiertNichtMeldung";
+				meldung="löschen,BenutzerExistiertNichtMeldung";
 			}
 			reader.close();
 		} catch (IOException e) {
@@ -225,14 +205,7 @@ public class ServerModel extends Thread{
 		}
 		return meldung;
 	}
-
-	public String getMeldung() {
-		return meldung;
-	}
-
-	public void setMeldung(String meldung) {
-		this.meldung = meldung;
-	}
+	
 	
 	
 }

@@ -19,7 +19,7 @@ import kamisado.commonClasses.Spielbrett;
 
 public class ClientView {
 	
-	private ClientModel clientModel;
+	private ClientModel clientModel; 
 	private Stage stage;
 	protected Spielbrett spielbrett;
 	private AnmeldefensterView anmeldeView;
@@ -48,6 +48,8 @@ public class ClientView {
 	public Label passwortFalschMeldung;
 	public Label benutzerExistiertNichtMeldung;
 	public Button btnbestätigen;
+	
+	public Label abmelden;
 	
     // Konstruktor
 	public ClientView(Stage stage, ClientModel clientModel, AnmeldefensterView anmeldeView) {
@@ -113,6 +115,8 @@ public class ClientView {
 		benutzerExistiertNichtMeldung = new Label(t.getString("BenutzerExistiertNichtMeldung"));
 		btnbestätigen = new Button(t.getString("ButtonBestätigen"));
 		
+		abmelden = new Label(t.getString("Abmeldung"));
+		
 		Scene scene = new Scene(borderPane);
         stage.setScene(scene);
                   
@@ -151,5 +155,6 @@ public class ClientView {
 		passwortFalschMeldung.setText(t.getString("PasswortFalschMeldung"));
 		benutzerExistiertNichtMeldung.setText(t.getString("BenutzerExistiertNichtMeldung"));
 		btnbestätigen.setText(t.getString("ButtonBestätigen"));
-		}
+		abmelden.setText(t.getString("Abmeldung"));
+	}
 }
